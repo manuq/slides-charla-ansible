@@ -44,16 +44,85 @@
 			<div class="slides">
 
 <section>
-  <h3>presentación</h3>
-  <p>hola mundo</p>
-  <h3>código</h3>
-  <pre><code data-trim contenteditable>
-function f(x) {
-  return x*x;
-  </code></pre>
-  <h3>imagen</h3>
-  <img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
+  <h3>JS "pelado"</h3>
+  <p>como lenguaje tiene (casi) todo</p>
+  <p>permite prototipar muy rápido en el navegador con el inspector</p>
 </section>
+<section>
+  <h3>por qué modularizar?</h3>
+  <p>el proyecto, en tamaño y complejidad, no iba a ser chico</p>
+</section>
+<section>
+  <h3>modularización típica en JS</h3>
+  <p>función fábrica anónima que se llama inmediatamente</p>
+  <pre><code data-trim contenteditable>
+(function () {
+   var $ = this.jQuery;
+   ...
+} ());
+  </code></pre>
+  <p>"patrón modulo"</p>
+</section>
+<section>
+  <p>referencia a otros módulos se hace por variables globales</p>
+  <p><small>se mancha el espacio de nombres global</small></p>
+  <p>el orden de referencias lo tenés que resolver vos</p>
+  <p><small>(ej una biblioteca que usa jQuery tiene que estar despues del tag que carga jquery)</small></p>
+  <p>optimizar para producción se complica</p>
+  <p><small>necesitás herramientas para pasar de varios tags a un solo tag</small></p>
+</section>
+<section>
+  <img src="images/requirejs.png">
+</section>
+<section>
+  <h3>require.js</h3>
+  <p>implementa la especificación AMD</p>
+  <p>cargador de modulos (y archivos)</p>
+  <p>resuelve dependencias y las carga de manera asíncrona</p>
+  <p>está optimizado para el lado cliente, navegador</p>
+</section>
+<section>
+  <h3>cómo se define un módulo</h3>
+  <pre><code data-trim contenteditable>
+define(id?, dependencias?, fabrica);
+  </code></pre>
+  <p>especificación AMD</p>
+</section>
+<section>
+  <pre><code data-trim contenteditable>
+define(['app/ui/button'], function (Button) {
+
+   var ui = {};
+
+   ui.buttons = [new Button()];
+
+   return ui;
+
+});
+  </code></pre>
+  <p>cada función definida por define se llama cuando sus dependencias son cargadas</p>
+</section>
+<section>
+  <h3>punto de entrada</h3>
+  <p>es uno solo</p>
+  <pre class="m"><code data-trim contenteditable>
+<script data-main="js/loader" src="js/lib/require.js"></script>
+  </code></pre>
+  <p>se carga el módulo referido en <code>data-main</code></p>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+  <img src="images/threejs.png">
+</section>
+<section>
+</section>
+<section>
+<p>listo!</p>
+</section>
+
 
 			</div>
 
