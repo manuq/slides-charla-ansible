@@ -4,7 +4,7 @@
 	<head>
 		<meta charset="utf-8">
 
-		<title>reveal.js - The HTML Presentation Framework</title>
+		<title>slides</title>
 
 		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
 		<meta name="author" content="Hakim El Hattab">
@@ -46,6 +46,12 @@
 
 
 <section>
+  <h3>JS modular, three.js, otras yerbas</h3>
+  <p><small>o como hice el interactivo de lacalor</small></p>
+</section>
+
+
+<section>
   <h3>JS "pelado"</h3>
   <p>como lenguaje tiene (casi) todo</p>
   <p>permite prototipar muy rápido en el navegador con el inspector</p>
@@ -54,6 +60,7 @@
 
 <section>
   <h3>por qué modularizar?</h3>
+  <p>un solo archivo JS está bien para una demo pero..</p>
   <p>el proyecto, en tamaño y complejidad, no iba a ser chico</p>
 </section>
 
@@ -72,12 +79,21 @@
 
 
 <section>
+  <pre><code data-trim contenteditable>
+<script src="lib/A.js"></script>
+<script src="lib/B.js"></script>
+<script src="app/main.js"></script>
+  </code></pre>
   <p>referencia a otros módulos se hace por variables globales</p>
   <p><small>se mancha el espacio de nombres global</small></p>
-  <p>el orden de referencias lo tenés que resolver vos</p>
+  <p>el sistema de resolución de referencias sos vos</p>
   <p><small>(ej una biblioteca que usa jQuery tiene que estar despues del tag que carga jquery)</small></p>
   <p>optimizar para producción se complica</p>
   <p><small>necesitás herramientas para pasar de varios tags a un solo tag</small></p>
+</section>
+
+
+<section>
 </section>
 
 
@@ -89,9 +105,10 @@
 <section>
   <h3>require.js</h3>
   <p>implementa la especificación AMD</p>
-  <p>cargador de modulos (y archivos)</p>
+  <p>carga módulos (y archivos)</p>
   <p>resuelve dependencias y las carga de manera asíncrona</p>
   <p>está optimizado para el lado cliente, navegador</p>
+  <p><small>del lado servidor, node.js tiene compatibilidad con AMD</small></p>
 </section>
 
 
@@ -116,21 +133,65 @@ define(['app/ui/button'], function (Button) {
 
 });
   </code></pre>
-  <p>cada función definida por define se llama cuando sus dependencias son cargadas</p>
+  <p>cada función definida por <code>define</code> se llama cuando sus dependencias son cargadas</p>
+  <p>extiende el patrón módulo, pero evitando las globales</p>
 </section>
 
 
 <section>
   <h3>punto de entrada</h3>
-  <p>es uno solo</p>
   <pre class="m"><code data-trim contenteditable>
 <script data-main="js/loader" src="js/lib/require.js"></script>
   </code></pre>
+  <p>es uno solo</p>
   <p>se carga el módulo referido en <code>data-main</code></p>
 </section>
 
 
 <section>
+  <h3>usando bibliotecas</h3>
+  <p>libs listas para AMD es fácil (y hay muchas)</p>
+  <p>libs "a la vieja escuela" también se pueden: shim</p>
+</section>
+
+
+<section>
+  <pre class="m"><code data-trim contenteditable>
+requirejs.config({
+    baseUrl: 'js/lib',
+    paths: {
+        app: '../app'
+    },
+    shim: {
+        'three': {
+            exports: 'THREE'
+        },
+        'CSS3DRenderer': {
+            deps: ['three'],
+            exports: 'THREE.CSS3DRenderer'
+        },
+    }
+});
+requirejs(["app/main"]);
+
+  </code></pre>
+</section>
+
+
+<section>
+  <h3>otras features require.js</h3>
+  <p>módulos con varias versiones</p>
+  <p>optimización del código para producción (concatena y minifica)</p>
+  <p>plugins (domready, cofee)</p>
+</section>
+
+
+<section>
+  <h3>en mi proyecto me permitió</h3>
+  <p>hacer una UI loca, bien modular, que se puede guionar</p>
+  <p>probar un par de opciones de dibujado en canvas</p>
+  <p><small>se puede enchufar otro módulo que proporcione la misma API</small></p>
+  <p>hacer pruebas chiquitas</p>
 </section>
 
 
@@ -144,8 +205,77 @@ define(['app/ui/button'], function (Button) {
 
 
 <section>
+  <h3>three.js</h3>
+  <p>lib de 3D para JS muy simple</p>
+  <p>para hacer gráficos 3D en el navegador sin perderse en los detalles</p>
+  <p>puede renderizar en canvas, svg, CSS3D y WebGL</p>
 </section>
 
+
+<section>
+  <p>la que yo elegi para este proyecto es CSS3D</p>
+  <p>la mía no es la app más espectacular que van a ver hecha en threejs (esas usan webgl)</p>
+  <p>en CSS se pueden hacer transformaciones 3D (traslación, rotación y escala)</p>
+  <p>features limitados, sólo planos</p>
+  <p>cubo de rubik de google usa lo mismo</p>
+</section>
+
+
+<section>
+  <pre class="m"><code data-trim contenteditable>
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera(...);
+var projector = new THREE.Projector();
+
+var renderer = new THREE.CSS3DRenderer();
+document.body.appendChild(renderer.domElement);
+
+var frameElem = document.createElement('canvas');
+var frame = new THREE.CSS3DObject(frameElem);
+scene.add(frame);
+  </code></pre>
+</section>
+
+<section>
+</section>
+
+
+<section>
+  <img src="images/paperjs.png">
+</section>
+
+<section>
+  <p>graficos vectoriales para JS en canvas</p>
+  <p>scene graph / document object model</p>
+  <p>basado en el lenguaje de scripting de adobe illustrator</p>
+</section>
+
+<section>
+  <pre class="m"><code data-trim contenteditable>
+path = new paper.Path.Circle(new paper.Point(0, 0), RADIUS);
+path.position = new paper.Point(pos[0], pos[1]);
+path.style = {
+    fillColor: 'rgba(7, 234, 255, 0.3)',
+};
+
+paper.view.draw();
+  </code></pre>
+</section>
+
+<section>
+  <p>la usé para los efectos de la UI</p>
+  <p>sliders circulares, efecto de tap</p>
+  <p>sería un lío dibujar una linea punteada, de guiones con las primitivas de canvas</p>
+</section>
+
+
+<section>
+</section>
+
+
+<section>
+<p>. . . . . . . . . </p>
+</section>
 
 <section>
 <p>listo!</p>
