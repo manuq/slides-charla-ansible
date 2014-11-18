@@ -4,10 +4,10 @@
 	<head>
 		<meta charset="utf-8">
 
-		<title>slides</title>
+		<title>Ansible, la batuta de Python</title>
 
-		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
-		<meta name="author" content="Hakim El Hattab">
+		<meta name="description" content="Ansible, la batuta de Python">
+		<meta name="author" content="Manuel Quiñones">
 
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -46,152 +46,165 @@
 
 
 <section>
-  <h3>JS modular, three.js, otras yerbas</h3>
-  <p><small>o como hice el interactivo de lacalor</small></p>
+  <h1>Ansible</h1>
+  <p>la batuta de Python</p>
+  <img src="images/polish-bigblueboo.gif" width="30%" class="s" alt="Ansible">
+  <p><small>Manuel Quiñones - @srmanuq - manuel.por.aca@gmail.com</small></p>
 </section>
 
 
 <section>
-  <h3>JS "pelado"</h3>
-  <p>como lenguaje tiene (casi) todo</p>
-  <p>permite prototipar muy rápido en el navegador con el inspector</p>
+  <ul>
+    <li>Intro
+    <li>Conceptos
+    <li>Ansible
+    <li>Ejemplos ad-hoc
+    <li>Ejemplos playbook
+  </ul>
 </section>
 
 
 <section>
-  <h3>por qué modularizar?</h3>
-  <p>un solo archivo JS está bien para una demo pero..</p>
-  <p>el proyecto, en tamaño y complejidad, no iba a ser chico</p>
+</section>
+
+<section>
+  <h3>Supongamos...</h3>
+  <p>Que manejo una red de máquinas,<br/>estoy en una de ellas,<br/>con acceso por SSH a todas las otras.
+  <p class="fragment"><br/>Quiero saber en principio, si me puedo comunicar con cada una.
+  <pre class="m fragment"><code contenteditable>$ ansible all -m ping
+</code></pre>
+</section>
+
+<section>
+  <h3>ShellShock!</h3>
+  <p>Quiero actualizar bash porque se encontró una vulnerabilidad.
+  <pre class="m"><code contenteditable>$ ansible all -m yum -a "name=bash state=latest"
+</code></pre>
+  <p class="fragment"><br/>yum está bien si mis hosts son tipo RedHat, si son tipo Debian?
+  <pre class="m fragment"><code contenteditable>$ ansible all -m apt -a "name=bash state=latest"
+</code></pre>
+</section>
+
+<section>
+  <p>Si la red está formada por ambos, cambio de método:
+
+<pre class="m"><code contenteditable>----
+- name: vacuna para el ShellShock
+  hosts: all
+  sudo: yes
+  tasks:
+   - name: asegurarse de que Bash esté en la última versión en los RedHat
+     yum: name=bash state=latest
+     when: ansible_os_family == "RedHat"
+   - name: asegurarse de que Bash esté en la última versión en los Debian
+     yum: name=bash state=latest
+     when: ansible_os_family == "Debian"
+</code></pre>
+<p><small>vacuna.yaml</small>
+<pre class="m"><code contenteditable>$ ansible-playbook -K vacuna.yaml
+</code></pre>
+</section>
+
+<section>
+</section>
+
+<section>
+  <h3>Orquestación, conceptos</h3>
+  <p>cloud computing</p>
+  <p>arquitectura orientada a servicios</p>
+  <p>aprovisionamiento, deploy</p>
+  <p class="fragment"><small>instalar y configurar software, base de datos, servidor
+            web, crear usuarios y grupos</small></p>
+  <p>virtualización</p>
+  <p class="fragment"><small>se simula el HW para permitir correr SW, una forma de
+            administrar recursos</small></p>
 </section>
 
 
 <section>
-  <h3>modularización típica en JS</h3>
-  <p>función fábrica anónima que se llama inmediatamente</p>
-  <pre><code data-trim contenteditable>
-(function () {
-   var $ = this.jQuery;
-   ...
-} ());
+  <h3>Breve historia de la automatización en Linux</h3>
+  <br/>
+  <h4>La edad de piedra</h4>
+  <p class="fragment">Entrar por SSH host por host, parar un servicio, editar un
+    archivo de configuración, volver a levantar el servicio.  Ir
+    acumulando un conjunto de scripts bash propios para automatizar esto.
+  </p>
+  <br/>
+  <h4>Automatizando con frameworks</h4>
+  <p class="fragment">Hay frameworks para asistir en la automatización previa,
+    como Chef (Ruby) o Fabric (Python). Pero sigue siendo una forma
+    imperativa.
+  </p>
+  <br/>
+  <h4>Orquestando, sistemas de estados, forma declarativa</h4>
+  <p class="fragment">Acá vamos ➔
+  </p>
+</section>
+
+
+<section>
+  <h3>Forma imperativa</h3>
+  <pre class="m"><code contenteditable>
+def deploy():
+    run("cd /path/to/application")
+    run("./update.sh")
   </code></pre>
-  <p>"patrón modulo"</p>
+  <p><small>Framework Fabric.</small></p>
 </section>
 
-
 <section>
-  <pre><code data-trim contenteditable>
-<script src="lib/A.js"></script>
-<script src="lib/B.js"></script>
-<script src="app/main.js"></script>
+  <h3>Forma declarativa</h3>
+  <p>En vez de llamar comandos, se define el estado deseado del
+  sistema.</p>
+  <pre class="m"><code contenteditable>    ----
+    file dest=/etc/httpd mode=755 owner=root group=root state=directory
   </code></pre>
-  <p>referencia a otros módulos se hace por variables globales</p>
-  <p><small>se mancha el espacio de nombres global</small></p>
-  <p>el sistema de resolución de referencias sos vos</p>
-  <p><small>(ej una biblioteca que usa jQuery tiene que estar despues del tag que carga jquery)</small></p>
-  <p>optimizar para producción se complica</p>
-  <p><small>necesitás herramientas para pasar de varios tags a un solo tag</small></p>
-</section>
 
-
-<section>
-</section>
-
-
-<section>
-  <img src="images/requirejs.png">
-</section>
-
-
-<section>
-  <h3>require.js</h3>
-  <p>implementa la especificación AMD</p>
-  <p>carga módulos (y archivos)</p>
-  <p>resuelve dependencias y las carga de manera asíncrona</p>
-  <p>está optimizado para el lado cliente, navegador</p>
-  <p><small>del lado servidor, node.js tiene compatibilidad con AMD</small></p>
-</section>
-
-
-<section>
-  <h3>cómo se define un módulo</h3>
-  <pre><code data-trim contenteditable>
-define(id?, dependencias?, fabrica);
+  <pre class="m"><code contenteditable>    ----
+    file dest=/etc/httpd state=absent
   </code></pre>
-  <p>especificación AMD</p>
+  <p><small>Playbooks de Ansible.</small></p>
+  <p>La herramienta de automatización se encarga de que el sistema
+  alcance ese estado.</p>
 </section>
 
-
 <section>
-  <pre><code data-trim contenteditable>
-define(['app/ui/button'], function (Button) {
-
-   var ui = {};
-
-   ui.buttons = [new Button()];
-
-   return ui;
-
-});
-  </code></pre>
-  <p>cada función definida por <code>define</code> se llama cuando sus dependencias son cargadas</p>
-  <p>extiende el patrón módulo, pero evitando las globales</p>
+<pre class="m"><code>    ----
+    tasks:
+    - name: ensure apache is at the latest version
+      yum: pkg=httpd state=latest
+    - name: write the apache config file
+      template: src=/srv/httpd.j2 dest=/etc/httpd.conf
+      notify:
+      - restart apache
+    - name: ensure apache is running
+      service: name=httpd state=started
+    handlers:
+      - name: restart apache
+        service: name=httpd state=restarted
+</code></pre>
 </section>
 
-
 <section>
-  <h3>punto de entrada</h3>
-  <pre class="m"><code data-trim contenteditable>
-<script data-main="js/loader" src="js/lib/require.js"></script>
-  </code></pre>
-  <p>es uno solo</p>
-  <p>se carga el módulo referido en <code>data-main</code></p>
+  <h3>Forma declarativa</h3>
+<br/>
+  <p>Es una capa de abstracción que aisla los detalles del "cómo" y te
+permite concentrar en el "qué".</p>
+<br/>
+  <p>El lenguaje declarativo es auditable por humanos.</p>
 </section>
 
-
 <section>
-  <h3>usando bibliotecas</h3>
-  <p>libs listas para AMD es fácil (y hay muchas)</p>
-  <p>libs "a la vieja escuela" también se pueden: shim</p>
-</section>
-
-
-<section>
-  <pre class="m"><code data-trim contenteditable>
-requirejs.config({
-    baseUrl: 'js/lib',
-    paths: {
-        app: '../app'
-    },
-    shim: {
-        'three': {
-            exports: 'THREE'
-        },
-        'CSS3DRenderer': {
-            deps: ['three'],
-            exports: 'THREE.CSS3DRenderer'
-        },
-    }
-});
-requirejs(["app/main"]);
-
-  </code></pre>
-</section>
-
-
-<section>
-  <h3>otras features require.js</h3>
-  <p>módulos con varias versiones</p>
-  <p>optimización del código para producción (concatena y minifica)</p>
-  <p>plugins (domready, cofee)</p>
-</section>
-
-
-<section>
-  <h3>en mi proyecto me permitió</h3>
-  <p>hacer una UI loca, bien modular, que se puede guionar</p>
-  <p>probar un par de opciones de dibujado en canvas</p>
-  <p><small>se puede enchufar otro módulo que proporcione la misma API</small></p>
-  <p>hacer pruebas chiquitas</p>
+  <p>Ejemplos: Puppet, <strong>Ansible</strong>, SaltStack</p>
+<br/>  <h3>Características</h3>
+  <p>Lenguaje declarativo (DSL)</p>
+  <p>Definición de recursos y estado deseado</p>
+  <p>Idempotencia</p>
+  <p><small>Se puede aplicar muchas veces, que el resultado es el mismo.</small></p>
+  <p>Información del sistema</p>
+  <p><small>se recolectan características del sistema (facts) y se
+  usan como variables.<br/>Ej: distro, procesador, hostname, IPs de las
+  interfaces.</small></p>
 </section>
 
 
@@ -200,78 +213,150 @@ requirejs(["app/main"]);
 
 
 <section>
-  <img src="images/threejs.png">
+  <img src="images/ansible-logo.png" width="50%" alt="ansible">
 </section>
 
 
 <section>
-  <h3>three.js</h3>
-  <p>lib de 3D para JS muy simple</p>
-  <p>para hacer gráficos 3D en el navegador sin perderse en los detalles</p>
-  <p>puede renderizar en canvas, svg, CSS3D y WebGL</p>
+  <h3>Ansible</h3>
+  <p><small>Permite:</small>
+  <p>Manejar configuraciones
+  <p>"Deployar" aplicaciones
+  <p>Orquestar
+</section>
+
+<section>
+<h3>Características</h3>
+<p>chiquito
+<p><small>no requiere mucha puesta en marcha, solo depende de SSH</small>
+<p><em>agentless</em></p>
+<p><small>sin servidores, demonios ni bases de datos</small>
+<p>arquitectura simple
+<p><small>fácil de usar, fácil de extender</small>
+<p>baterías incluídas,
+<p><small>muchos módulos built-in que cubren la mayoría de necesidades</small>
+<p>ingredientes: tasks, handlers, variables y facts
 </section>
 
 
 <section>
-  <p>la que yo elegi para este proyecto es CSS3D</p>
-  <p>la mía no es la app más espectacular que van a ver hecha en threejs (esas usan webgl)</p>
-  <p>en CSS se pueden hacer transformaciones 3D (traslación, rotación y escala)</p>
-  <p>features limitados, sólo planos</p>
-  <p>cubo de rubik de google usa lo mismo</p>
-</section>
-
-
-<section>
-  <pre class="m"><code data-trim contenteditable>
-var scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera(...);
-var projector = new THREE.Projector();
-
-var renderer = new THREE.CSS3DRenderer();
-document.body.appendChild(renderer.domElement);
-
-var frameElem = document.createElement('canvas');
-var frame = new THREE.CSS3DObject(frameElem);
-scene.add(frame);
-  </code></pre>
+<h3>Dependencias</h3>
+<p>Python, Py2 por ahora ب_ب
+<p><small>2.6+ en el server, 2.4+ en los nodos</small>
+<p>OpenSSH como transporte
 </section>
 
 <section>
-</section>
+<h3>OpenSSH como transporte</h3>
 
+<p>Autenticación descentralizada, por credenciales.
+<p>Autenticación aconsejada es por claves SSH,<br/>pero puede ser por contraseña.
+<p>No es requisito, se pueden usar otros transportes.
 
-<section>
-  <img src="images/paperjs.png">
-</section>
-
-<section>
-  <p>graficos vectoriales para JS en canvas</p>
-  <p>scene graph / document object model</p>
-  <p>basado en el lenguaje de scripting de adobe illustrator</p>
 </section>
 
 <section>
-  <pre class="m"><code data-trim contenteditable>
-path = new paper.Path.Circle(new paper.Point(0, 0), RADIUS);
-path.position = new paper.Point(pos[0], pos[1]);
-path.style = {
-    fillColor: 'rgba(7, 234, 255, 0.3)',
-};
-
-paper.view.draw();
-  </code></pre>
+<h3>Internamente</h3>
+<p>Copia scripts (por sftp o scp) al /tmp del host remoto<br/>los ejecuta por ssh,<br/>y los elimina al final.
 </section>
 
 <section>
-  <p>la usé para los efectos de la UI</p>
-  <p>sliders circulares, efecto de tap</p>
-  <p>sería un lío dibujar una linea punteada, de guiones con las primitivas de canvas</p>
+<h3>Inventario</h3>
+<p><small>/etc/ansible/hosts</small>
+<pre class="m"><code>
+[webservers]
+server_uno.demo.com
+server_dos.demo.com
+
+[testers]
+tester_uno.demo.com
+tester_dos.demo.com
+
+[develop]
+develop.demo.com
+</code></pre>
+</section>
+
+<section>
+<ul>
+<li>una lista de hostnames en formato INI
+<li>se pueden agrupar hosts
+<li>permite patrones: server-[01:50].demo.com
+<li>pueden ser varios archivos en un directorio
+<li>puede ser dinámico, la lista se puede obtener de otras fuentes (ldap, etc)
+</ul>
 </section>
 
 
 <section>
 </section>
 
+
+<section>
+<pre class="b"><code contenteditable>
+ _____________________
+< OK, hagamos algo... >
+ ---------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+</code></pre>
+</section>
+
+
+<section>
+<pre class="m"><code contenteditable>$ ansible all --list-hosts
+$ ansible dbservers --list-hosts
+$ ansible blue* --list-hosts
+$ ansible www???.example.com --list-hosts
+</code></pre>
+</section>
+
+<section>
+<p>Ejemplos ad-hoc</p>
+<img src="images/spin1.gif" width="25%" class="s" alt="ansible">
+</section>
+
+<section>
+<h3>"ad-hoc"</h3>
+<p>Son tareas que hacemos una sola vez, no las guardamos.
+<p>Se ejecutan en paralelo.
+<br/>
+<br/>
+<code><pre class="m">$ ansible all -m fetch -a "src=/var/log/boot.log dest=/tmp/logs"
+</code></pre>
+
+</section>
+
+<section>
+</section>
+
+<section>
+<p>Ejemplos playbook</p>
+<img src="images/spin2.gif" width="25%" class="s" alt="ansible">
+</section>
+
+
+<section>
+<h3>Playbooks</h3>
+<p>Se ejecutan en orden.
+<p>Pueden disparar acciones al final de la corrida.
+<p><small>notify, handlers</small>
+<p>Jinja para usar variables.
+<p><small>tanto en playbooks como en templates</small>
+</section>
+
+<section>
+<code><pre class="m">$ ansible-playbook hola-mundo.yml
+$ ansible-playbook -e "nombre=luli" hola-mundo2.yml
+</code></pre>
+</section>
+
+<section>
+</section>
 
 <section>
 <p>. . . . . . . . . </p>
@@ -279,6 +364,7 @@ paper.view.draw();
 
 <section>
 <p>listo!</p>
+<p class="fragment"><small>cc-by-sa @srmanuq<br/>gifs: cc-by-sa @bigblueboo</small></p>
 </section>
 
 
@@ -311,7 +397,7 @@ paper.view.draw();
 					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
 					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
 					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					//{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
 					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
 					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
 				]

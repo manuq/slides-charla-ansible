@@ -11,6 +11,15 @@ pre code {
   color: #DCDCDC;
 }
 
+pre.b {
+  box-shadow: none;
+}
+pre.b code {
+  display: block; padding: 0.5em;
+  background: transparent;
+  color: #3F3F3F;
+}
+
 pre .keyword,
 pre .tag,
 pre .css .class,
